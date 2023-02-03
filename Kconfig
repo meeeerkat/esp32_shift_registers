@@ -1,7 +1,0 @@
-menu "Shift registers"
-    config SHIFT_REGISTERS_NB
-        int "Maximum number of shift registers"
-        range 0 255
-        default 10
-endmenu
-
