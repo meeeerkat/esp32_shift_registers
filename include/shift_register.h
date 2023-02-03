@@ -6,12 +6,13 @@
 
 // NO MALLOCS HERE
 // All the new shift_registers are put in a (private) array with a fixed (at compilation) size
-#define SHIFT_REGISTER_NB CONFIG_SHIFT_REGISTER_NB
+#define SHIFT_REGISTERS_NB CONFIG_SHIFT_REGISTERS_NB
 
 
 struct shift_register;
 typedef struct shift_register* shift_register_t;
 
+extern void init_shift_registers_handling();
 extern shift_register_t shift_register__create(uint8_t ser, uint8_t srclk, uint8_t rclk, uint8_t bits_nb);
 extern void shift_register__send(shift_register_t s, uint64_t bits);
 
