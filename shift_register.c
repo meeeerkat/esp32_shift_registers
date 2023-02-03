@@ -35,6 +35,7 @@ void shift_register__init(shift_register_t* sr, uint8_t ser, uint8_t srclk, uint
 }
 
 void shift_register__send(shift_register_t* sr, uint64_t bits) {
+  // We just send a request to the task (async behaviour)
   sr->bits_to_send = bits;
   xQueueSend(tosend_queue, &sr, 0);
 }
@@ -47,21 +48,20 @@ void shift_registers_task(void *args)
   shift_register_t* sr;
   while (1) {
     if(xQueueReceive(tosend_queue, &sr, portMAX_DELAY)) {
-      printf("%u, %u, %u\n", (unsigned)sr->ser, (unsigned)sr->srclk, (unsigned)sr->rclk);
+      // Handling of a shift_register__send request
       for (uint8_t b=0; b < sr->bits_nb; b++) {
+        // Data bit set
         gpio_set_level(sr->ser, (sr->bits_to_send >> b) & 1);
         vTaskDelay(pdMS_TO_TICKS(10));
-        printf("srclk, 1\n");
+        // SRCLK rising edge (and back to 0)
         gpio_set_level(sr->srclk, 1);
         vTaskDelay(pdMS_TO_TICKS(10));
-        printf("srclk, 0\n");
         gpio_set_level(sr->srclk, 0);
         vTaskDelay(pdMS_TO_TICKS(10));
       }
-      printf("rclk, 1\n");
+      // RCLK rising edge (and back to 0)
       gpio_set_level(sr->rclk, 1);
       vTaskDelay(pdMS_TO_TICKS(10));
-      printf("rclk, 0\n");
       gpio_set_level(sr->rclk, 0);
     }
   }
