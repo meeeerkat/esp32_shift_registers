@@ -48,3 +48,10 @@ void shift_register__send(shift_register_t* sr, uint64_t bits) {
   sr->bits_sent = bits;
 }
 
+void shift_register__update(shift_register_t* sr, uint64_t mask, uint64_t bits) {
+  // same as sr->bits_sent but with zeroes where the mask applies
+  const uint64_t cleared_bits = sr->bits_sent & (~mask);
+  // mask & bits -> we only update bits that are in the mask (the others aren't modified)
+  const uint64_t new_bits = cleared_bits | (mask & bits);
+  shift_register__send(sr, new_bits);
+}
