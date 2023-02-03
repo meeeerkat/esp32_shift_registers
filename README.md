@@ -5,9 +5,3 @@ Here a "shift register" can actually be multiple physical components chained tog
 
 ### Limitations
 - For now, shift register chain that over 64bits long aren't supported.  
-- /!\ The shift\_register variables shouldn't be local (pointer references are kept when sending values, once the values are send the variable may be "deallocated").
-
-
-### TODO
-- Throw an event when values have been sent
-- Allow configuration of shift register clk (SRCLK) period ??
