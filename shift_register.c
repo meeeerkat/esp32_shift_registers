@@ -18,10 +18,10 @@ void shift_register__init(shift_register_t* sr, uint8_t ser, uint8_t srclk, uint
   sr->rclk = rclk;
   sr->bits_nb = bits_nb;
 
-  gpio_set_direction(ser, GPIO_MODE_OUTPUT);
-  gpio_set_direction(srclk, GPIO_MODE_OUTPUT);
-  gpio_set_direction(rclk, GPIO_MODE_OUTPUT);
+  // Set rclk GPIO mode
+  gpio_set_direction(sr->rclk, GPIO_MODE_OUTPUT);
 
+  // Initializing bus
   spi_bus_config_t buscfg={
     .miso_io_num = -1,
     .mosi_io_num = sr->ser,
@@ -29,22 +29,21 @@ void shift_register__init(shift_register_t* sr, uint8_t ser, uint8_t srclk, uint
     .quadwp_io_num = -1,
     .quadhd_io_num = -1
   };
-  
   spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_DISABLED); 
 
+  // Initializing slave interface
   spi_device_interface_config_t devcfg={
-   //.command_bits = 0,
-   //.address_bits = 0,
-   //.dummy_bits = 0,
-   .mode = 0,
-   .clock_speed_hz = 1,
-//   .spics_io_num = -1,
-   .queue_size = 1,
-   .flags = SPI_DEVICE_NO_DUMMY | SPI_DEVICE_BIT_LSBFIRST,
+    .mode = 0,
+    // 1 MHz, maybe would need to be configurable (10MHz doesn't work properly for 1 shift register)
+    .clock_speed_hz = 1000000,
+    .queue_size = 1,
+    .flags = SPI_DEVICE_NO_DUMMY | SPI_DEVICE_BIT_LSBFIRST
   };
   spi_bus_add_device(SPI2_HOST, &devcfg, &sr->spi_handle);
 
+  // Resetting rclk GPIO
   gpio_set_level(sr->rclk, 0);
+
   // Reset register
   shift_register__send(sr, 0);
 }
@@ -57,11 +56,10 @@ void shift_register__send(shift_register_t* sr, uint64_t bits) {
   };
 
   esp_err_t err = spi_device_transmit(sr->spi_handle, &transaction);
-  printf("HERE %u\n", err);
+  // TODO: error handling
 
   // RCLK rising edge (and back to 0)
   gpio_set_level(sr->rclk, 1);
-  vTaskDelay(pdMS_TO_TICKS(1000));
   gpio_set_level(sr->rclk, 0);
 
   sr->bits_sent = bits;
