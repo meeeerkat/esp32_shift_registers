@@ -2,10 +2,12 @@
 #define _SHIFT_REGISTER_H_
 
 #include <stdint.h>
+#include "driver/spi_master.h"
 
 
 
 typedef struct {
+  spi_device_handle_t spi_handle;
   uint8_t ser, srclk, rclk;
   uint8_t bits_nb;
   uint64_t bits_sent;
